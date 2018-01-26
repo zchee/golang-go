@@ -37,6 +37,8 @@ import (
 	"cmd/go/internal/str"
 	"cmd/go/internal/work"
 	"cmd/internal/test2json"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 // Break init loop.
@@ -644,16 +646,21 @@ func runTest(cmd *base.Command, args []string) {
 	var builds, runs, prints []*work.Action
 
 	if testCoverPaths != nil {
+		fmt.Fprintf(os.Stderr, "testCoverPaths: %+v\n", testCoverPaths)
 		match := make([]func(*load.Package) bool, len(testCoverPaths))
 		matched := make([]bool, len(testCoverPaths))
 		for i := range testCoverPaths {
 			match[i] = load.MatchPackage(testCoverPaths[i], base.Cwd)
+			fmt.Fprintf(os.Stderr, "match[i]: %+v\n", match[i])
 		}
 
 		// Select for coverage all dependencies matching the testCoverPaths patterns.
 		for _, p := range load.PackageList(pkgs) {
+			fmt.Fprintf(os.Stderr, "p.ImportPath: %s\n", spew.Sdump(p))
 			haveMatch := false
 			for i := range testCoverPaths {
+				fmt.Fprintf(os.Stderr, "testCoverPaths[i]: %+v\n", testCoverPaths[i])
+				fmt.Fprintf(os.Stderr, "match[i](p): %+v\n", match[i](p))
 				if match[i](p) {
 					matched[i] = true
 					haveMatch = true
@@ -673,6 +680,7 @@ func runTest(cmd *base.Command, args []string) {
 
 		// Mark all the coverage packages for rebuilding with coverage.
 		for _, p := range testCoverPkgs {
+			fmt.Fprintf(os.Stderr, "p: %+v\n", p)
 			// There is nothing to cover in package unsafe; it comes from the compiler.
 			if p.ImportPath == "unsafe" {
 				continue

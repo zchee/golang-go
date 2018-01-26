@@ -228,6 +228,7 @@ func treeCanMatchPattern(pattern string) func(name string) bool {
 // is not a vendored package: cmd/vendor would be a command named vendor,
 // and the pattern cmd/... matches it.
 func matchPattern(pattern string) func(name string) bool {
+	fmt.Fprintf(os.Stderr, "matchPattern.pattern: %+v\n", pattern)
 	// Convert pattern to regular expression.
 	// The strategy for the trailing /... is to nest it in an explicit ? expression.
 	// The strategy for the vendor exclusion is to change the unmatchable
@@ -259,6 +260,8 @@ func matchPattern(pattern string) func(name string) bool {
 	reg := regexp.MustCompile(`^` + re + `$`)
 
 	return func(name string) bool {
+		fmt.Fprintf(os.Stderr, "matchPattern.name: %+v\n", name)
+		fmt.Fprintf(os.Stderr, "reg.MatchString(replaceVendor(name, vendorChar)): %+v\n", reg.MatchString(replaceVendor(name, vendorChar)))
 		if strings.Contains(name, vendorChar) {
 			return false
 		}
@@ -296,6 +299,7 @@ func MatchPackage(pattern, cwd string) func(*Package) bool {
 			if rel == ".." || strings.HasPrefix(rel, "../") {
 				return false
 			}
+			fmt.Fprintf(os.Stderr, "seach: rel: %+v\n", matchPath(rel))
 			return matchPath(rel)
 		}
 	case pattern == "all":
